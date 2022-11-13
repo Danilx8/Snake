@@ -18,6 +18,51 @@ using namespace std;
 
 string userName;
 
+class field {
+  public:
+    int height, width;
+    
+    void setHeight(int inputHeight) {
+      height = inputHeight;
+    }
+    
+    void setWidth(int inputWidth) {
+      width = inputWidth;
+    }
+    
+    void initializeField() {
+      system ("cls");
+      
+      for (int y = 0; y < height; ++y) {
+        if (y == 0 || y == height - 1) {
+          for (int x = 0; x < width; ++x) {
+            cout << '#';
+          }
+        } else {
+          cout << '#' << string(width - 2, ' ') << '#';
+        }
+        cout << endl;
+      }
+    }
+};
+
+class entity {
+  public:
+    int x, y;
+    
+};
+
+class snake: public entity{
+  public:
+    void move (int direction) {
+      cout << direction;
+    }
+};
+
+class food: public entity {
+  
+};
+
 void firstScreen() {
     cout << "                                                                                                                         \n"           
           "                                                                                                                         \n"
@@ -41,17 +86,37 @@ void firstScreen() {
           "                                                                                                                         \n"
           "                                                                                                                         \n"
           "                                                                                                                         \n"
-          "                                               push any button to continue...                                            \n"
+          "                                               press any key to continue...                                              \n"
           "                                                                                                                         \n";
-};
+    _getch();  
+    system("cls");
+    cout << "Enter your name: ";
+    cin >> userName;
+    system("cls");
+}
 
 int main() {
   firstScreen();
-  _getch();  
-  system("cls");
-  cout << "Enter your name: ";
-  cin >> userName;  
+  
+  bool choice;
+  cout << "Choose the action: press 1 to start the game or 0 to exit. ";
+  cin >> choice;
+  
+  if (choice != true) {
+    cout << "Goodbye!" << endl;
+    system("pause");
+    return 0;
+  }
+  
   while (true) {
+    cout << "right choice";
+    field area;
+    area.setHeight(8);
+    area.setWidth(15);
+    area.initializeField();
     break;
   }
+  
+  system("pause");
+  return 0;
 }
