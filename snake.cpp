@@ -21,7 +21,7 @@ using namespace std;
 string userName;
 
 struct coordinates {
-  int rowIndex, columnIndex;
+  int columnIndex, rowIndex;
 };
 
 class field {
@@ -75,8 +75,8 @@ class field {
       return width;
     }
 
-    void spawn(int rowIndex, int columnIndex, char character) {
-      currentField[rowIndex][columnIndex] = character;
+    void spawn(int columnIndex, int rowIndex, char character) {
+      currentField[columnIndex][rowIndex] = character;
     }
 } gameField;
 
@@ -92,7 +92,7 @@ class food {
       position.rowIndex = -1;
     }
 
-    void setPosition(int rowIndex, int columnIndex) {
+    void setPosition(int columnIndex, int rowIndex) {
       position.rowIndex = rowIndex;
       position.columnIndex = columnIndex;
     }
@@ -106,11 +106,11 @@ class food {
       }
     }
 
-    int getRowIndex() const {
-      return position.rowIndex;
-    }
     int getColumnIndex() const {
       return position.columnIndex;
+    }
+    int getRowIndex() const {
+      return position.rowIndex;
     }
     char getSymbol() const {
       return symbol;
@@ -140,11 +140,11 @@ class snake {
     void snakeSpawn(field& currentField) {
       for(int bodyPartIndex = 0; bodyPartIndex < snakeSize; ++bodyPartIndex) {
         if(bodyPartIndex == 0) {
-          currentField.spawn(position[bodyPartIndex].rowIndex,
-                             position[bodyPartIndex].columnIndex, headSymbol);
+          currentField.spawn(position[bodyPartIndex].columnIndex,
+                             position[bodyPartIndex].rowIndex, headSymbol);
         } else {
-          currentField.spawn(position[bodyPartIndex].rowIndex,
-                             position[bodyPartIndex].columnIndex, bodySymbol);
+          currentField.spawn(position[bodyPartIndex].columnIndex,
+                             position[bodyPartIndex].rowIndex, bodySymbol);
         }
       }
     }
@@ -186,10 +186,10 @@ class snake {
       head.rowIndex += nextPosition.rowIndex;
       head.columnIndex += nextPosition.columnIndex;
 
-      if (head.columnIndex < 0 ||
-          head.rowIndex < 0 ||
-          head.columnIndex >= currentField.getWidth() - 1||
-          head.rowIndex >= currentField.getHeight() - 1) {
+      if (head.columnIndex < 1 ||
+          head.rowIndex < 1 ||
+          head.columnIndex >= currentField.getHeight() - 1||
+          head.rowIndex >= currentField.getWidth() - 1) {
         throw "DEADD!!!!";
         
       }
@@ -207,7 +207,7 @@ class snake {
     }
     
     bool checkFood(const food& currentFood) {
-      if(currentFood.getRowIndex() == head.rowIndex && currentFood.getColumnIndex() == head.columnIndex) {
+      if(currentFood.getRowIndex() == head.columnIndex && currentFood.getColumnIndex() == head.rowIndex) {
         snakeSize += 1;
         return true;
       }
@@ -248,13 +248,13 @@ void firstScreen() {
   system("cls");
 }
 
-const int field::height = 25;
+const int field::height = 10;
 const int field::width = 15;
 
 int main() {
   firstScreen();
   
-  gameFood.setPosition(22, 13);
+  gameFood.setPosition(8, 5);
 
   bool choice;
   cout << "Choose the action: press 1 to start the game or 0 to exit. ";
@@ -291,7 +291,7 @@ int main() {
 
     gameField.print();
 
-    Sleep(0.1);
+    Sleep(100);
     system("cls");
   } 
   system("pause");
