@@ -441,6 +441,7 @@ int main() {
       system("pause");
       return 0;
     case 2:
+      system("cls");
       leaderboard(userName, score);
       system("pause");
       system("cls");
@@ -448,15 +449,21 @@ int main() {
       return 0;
     case 3:
       remove("leaderboard.txt");
-      cout << "leaderboard reset successfully";
+      system("cls");
+      colorize(4);
+      cout << "leaderboard reset successfully\n";
+      system("pause");
       system("cls");
       main();
       return 0;
     case 4:
-      cout << "Thanks for coming, goodbye!\n";
+      system("cls");
+      colorize(14);
+      cout << "Thanks for playing, goodbye!\n";
       system("pause");
       return 0;
     default:
+      system("cls");
       cout << "wrong input\n";
       system("pause");
       system("cls");
