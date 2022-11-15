@@ -165,7 +165,7 @@ class field {
         }
         cout << endl;
       }
-      
+
       colorize(14);
       cout << "\n\n\n"
            "\t NAME:" << userName << "\n"
@@ -400,7 +400,7 @@ int main() {
   firstScreen();
   gameFood.setPosition((rand() % (gameField.getWidth() - 2)) + 1,
                        (rand() % (gameField.getHeight() - 2)) + 1);
-  
+
   switch (choice()) {
     case 1:
       colorize(10);
