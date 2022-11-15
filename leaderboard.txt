@@ -1,10 +1,10 @@
-1 DANIL 180
-2 d 140
-3 ndail 130
-4 DANIL 120
-5 Danil 70
-6 danil 60
-7 daniil 60
-8 lololo 50
-9 danil 50
-10 danil 40
+	1 - 0
+	2 - 0
+	3 - 0
+	4 - 0
+	5 - 0
+	6 - 0
+	7 - 0
+	8 - 0
+	9 - 0
+	10 - 0

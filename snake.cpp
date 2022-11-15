@@ -10,7 +10,9 @@
 #include <fstream>
 #include <conio.h>
 #include <windows.h>
+#include <time.h>
 using namespace std;
+
 
 void colorize(int colorNumber) {
   HANDLE hConsole;
@@ -30,6 +32,94 @@ int score = 0;
 struct coordinates {
   int columnIndex, rowIndex;
 };
+
+struct leaderboardLine {
+  int place;
+  string name = "-";
+  int score;
+} players[10];
+
+void createLeaderboard(string currentPlayerName, int currentPlayerScore) {
+  ofstream outfile ("leaderboard.txt");
+  players[0].name = currentPlayerName;
+  players[0].score = currentPlayerScore;
+
+  outfile << players[0].place;
+  outfile << ' ';
+  outfile << players[0].name;
+  outfile << ' ';
+  outfile << players[0].score;
+  outfile << '\n';
+  outfile.close();
+}
+
+int fileParsing(fstream& file, string currentPlayerName, int currentPlayerScore ) {
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    file >> players[playerIndex].place;
+    file >> players[playerIndex].name;
+    file >> players[playerIndex].score;
+  }
+
+  int worsePlayerScore;
+  string worsePlayerName;
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    if (currentPlayerScore > players[playerIndex].score) {
+      for (int worsePlayerIndex = playerIndex; worsePlayerIndex < 10; ++worsePlayerIndex) {
+        worsePlayerScore = players[worsePlayerIndex].score;
+        worsePlayerName = players[worsePlayerIndex].name;
+        players[worsePlayerIndex].score = currentPlayerScore;
+        players[worsePlayerIndex].name = currentPlayerName;
+        currentPlayerScore = worsePlayerScore;
+        currentPlayerName = worsePlayerName;
+      }
+      return 1;
+    }
+  }
+  return 0;
+}
+
+void leaderboardOutput() {
+  fstream output;
+  output.open("leaderboard.txt", fstream::out | fstream::trunc);
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    output << '\t';
+    output << players[playerIndex].place;
+    output << ' ';
+    output << players[playerIndex].name;
+    output << ' ';
+    output << players[playerIndex].score;
+    output << '\n';
+  }
+  output.close();;
+}
+
+void leaderboard(string name, int score) {
+  fstream readingFile;
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    players[playerIndex].place = playerIndex + 1;
+  }
+  readingFile.open("leaderboard.txt");
+  if (readingFile.is_open()) {
+    fileParsing(readingFile, name, score);
+    readingFile.close();
+  } else {
+    createLeaderboard(name, score);
+  }
+
+  leaderboardOutput();
+  readingFile.open("leaderboard.txt");
+  colorize(14);
+  cout << "\n\tBEST SCORES\n";
+  cout << readingFile.rdbuf();
+  readingFile.close();
+}
+
+void getHighestScore() {
+  fstream file;
+  file.open("leaderboard.txt");
+  fileParsing(file, "-", 0);
+  file.close();
+}
 
 class field {
   private:
@@ -60,15 +150,33 @@ class field {
 
       for (int rowIndex = 0; rowIndex < height; ++rowIndex) {
         for (int columnIndex = 0; columnIndex < width; ++columnIndex) {
+          switch(currentField[rowIndex][columnIndex]) {
+            case '#':
+              colorize(15);
+              break;
+            case '@':
+              colorize(2);
+              break;
+            case '*':
+              colorize(10);
+              break;
+            case '$':
+              colorize(6);
+              break;
+            default:
+              colorize(11);
+              break;
+          }
           cout << currentField[rowIndex][columnIndex];
         }
         cout << endl;
       }
-
+      
+      colorize(14);
       cout << "\n\n\n"
            "\t NAME:" << userName << "\n"
            "\t CURRENT SCORE:" << score << "\n"
-           "\t HIGHEST SCORE: \n";
+           "\t HIGHEST SCORE: " << players[0].score << "\n";
     }
 
     void clear() {
@@ -109,9 +217,9 @@ class food {
       position.columnIndex = columnIndex;
     }
 
-    void reposition(const field& currentField) {
-      position.rowIndex = srand() % (currentField.getHeight());
-      position.columnIndex = srand() % (currentField.getWidth());
+    void reposition(field& currentField) {
+      position.rowIndex = rand() % (currentField.getHeight());
+      position.columnIndex = rand() % (currentField.getWidth());
       if (position.rowIndex == 0 || position.columnIndex == 0 ||
           position.rowIndex == currentField.getHeight() - 1 ||
           position.columnIndex == currentField.getWidth() - 1) {
@@ -228,7 +336,7 @@ class snake {
 } gameSnake(gameField);
 
 void firstScreen() {
-  colorize(250);
+  colorize(2);
   cout << "                                                                                                                         \n"
        "                                                                                                                         \n"
        "     SSSSSSSSSSSSSSS NNNNNNNN        NNNNNNNN               AAA               KKKKKKKKK    KKKKKKKEEEEEEEEEEEEEEEEEEEEEE \n"
@@ -257,91 +365,17 @@ void firstScreen() {
   system("cls");
 }
 
-struct leaderboardLine {
-  int place;
-  string name = "-";
-  int score;
-} players[10];
-
-void createLeaderboard(string currentPlayerName, int currentPlayerScore) {
-  ofstream outfile ("leaderboard.txt");
-  players[0].name = currentPlayerName;
-  players[0].score = currentPlayerScore;
-
-  outfile << players[0].place;
-  outfile << ' ';
-  outfile << players[0].name;
-  outfile << ' ';
-  outfile << players[0].score;
-  outfile << '\n';
-  outfile.close();
-}
-
-int fileParsing(fstream& file, string currentPlayerName, int currentPlayerScore ) {
-  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
-    file >> players[playerIndex].place;
-    file >> players[playerIndex].name;
-    file >> players[playerIndex].score;
-  }
-
-  int worsePlayerScore;
-  string worsePlayerName;
-  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
-    if (currentPlayerScore > players[playerIndex].score) {
-      for (int worsePlayerIndex = playerIndex; worsePlayerIndex < 10; ++worsePlayerIndex) {
-        worsePlayerScore = players[worsePlayerIndex].score;
-        worsePlayerName = players[worsePlayerIndex].name;
-        players[worsePlayerIndex].score = currentPlayerScore;
-        players[worsePlayerIndex].name = currentPlayerName;
-        currentPlayerScore = worsePlayerScore;
-        currentPlayerName = worsePlayerName;
-      }
-      return 1;
-    }
-  }
-  return 0;
-}
-
-void leaderboardOutput() {
-  fstream output;
-  output.open("leaderboard.txt", fstream::out | fstream::trunc);
-  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
-    output << players[playerIndex].place;
-    output << ' ';
-    output << players[playerIndex].name;
-    output << ' ';
-    output << players[playerIndex].score;
-    output << '\n';
-  }
-  output.close();;
-}
-
-void leaderboard(string name, int score) {
-  fstream readingFile;
-  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
-    players[playerIndex].place = playerIndex + 1;
-  }
-  readingFile.open("leaderboard.txt");
-  if (readingFile.is_open()) {
-    fileParsing(readingFile, name, score);
-    readingFile.close();
-  } else {
-    createLeaderboard(name, score);
-  }
-  leaderboardOutput();
-  readingFile.open("leaderboard.txt");
-  cout << readingFile.rdbuf();
-}
-
 int choice() {
   int input;
-  cout << "Choose the action: press 1 to start the game, 2 to show the leaderboard or 3 to exit. ";
+  colorize(10);
+  cout << "Choose the action: press 1 to start the game, 2 to show the leaderboard, 3 to reset the leaderboard or 4 to exit. " << endl;
   cin >> input;
   return input;
 }
 
 void gameOver () {
   system("cls");
+  colorize(4);
   cout <<"   /^^^^         /^       /^^       /^^/^^^^^^^^\n"
        " /^    /^^      /^ ^^     /^ /^^   /^^^/^^      \n"
        "/^^            /^  /^^    /^^ /^^ / /^^/^^      \n"
@@ -357,22 +391,27 @@ void gameOver () {
        "/^^        /^^    /^^ /^^    /^^      /^^  /^^    \n"
        "  /^^     /^^      /^^^^     /^^      /^^    /^^  \n"
        "    /^^^^           /^^      /^^^^^^^^/^^      /^^\n";
+
   leaderboard(userName, score);
   cout << "\nThanks for coming, goodbye!\n";
   system("pause");
 }
 
-const int field::height = 10;
-const int field::width = 15;
+const int field::height = 30;
+const int field::width = 25;
 
 int main() {
+  getHighestScore();
+  srand(time(0));
   firstScreen();
-
-  gameFood.setPosition(8, 5);
-
+  gameFood.setPosition((rand() % (gameField.getWidth() - 2)) + 1,
+                       (rand() % (gameField.getHeight() - 2)) + 1);
+  
   switch (choice()) {
     case 1:
-      cout << "Enter your name: ";
+      colorize(10);
+      cout << "Enter your name without spaces: ";
+      colorize(47);
       cin >> userName;
       system("cls");
 
@@ -396,7 +435,7 @@ int main() {
 
         gameField.print();
 
-        Sleep(100);
+        Sleep(70);
         system("cls");
       }
       system("pause");
@@ -406,7 +445,14 @@ int main() {
       system("pause");
       system("cls");
       main();
+      return 0;
     case 3:
+      remove("leaderboard.txt");
+      cout << "leaderboard reset successfully";
+      system("cls");
+      main();
+      return 0;
+    case 4:
       cout << "Thanks for coming, goodbye!\n";
       system("pause");
       return 0;
