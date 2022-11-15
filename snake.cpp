@@ -7,10 +7,16 @@
 *************************/
 
 #include <iostream>
-#include <string>
+#include <fstream>
 #include <conio.h>
 #include <windows.h>
 using namespace std;
+
+void colorize(int colorNumber) {
+  HANDLE hConsole;
+  hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+  SetConsoleTextAttribute(hConsole, colorNumber);
+}
 
 /* добавить: поле, кнопки управления, генерацию еды на поле, взаимодействия змейки с едой и границами поля,
    таблицу рекордов, ввод имени пользователя, систему баллов, базирующуюся на длине змейки при помощи вычитания
@@ -18,7 +24,8 @@ using namespace std;
    началом, рейтингом и выходом.
 */
 
-string userName;
+string userName = "-";
+int score = 0;
 
 struct coordinates {
   int columnIndex, rowIndex;
@@ -57,6 +64,11 @@ class field {
         }
         cout << endl;
       }
+
+      cout << "\n\n\n"
+           "\t NAME:" << userName << "\n"
+           "\t CURRENT SCORE:" << score << "\n"
+           "\t HIGHEST SCORE: \n";
     }
 
     void clear() {
@@ -98,10 +110,11 @@ class food {
     }
 
     void reposition(const field& currentField) {
-      position.rowIndex = rand() % (currentField.getHeight());
-      position.columnIndex = rand() % (currentField.getWidth());
-      if (position.rowIndex == 0 || position.columnIndex == 0 || position.rowIndex == currentField.getHeight() - 1
-       || position.columnIndex == currentField.getWidth() - 1) {
+      position.rowIndex = srand() % (currentField.getHeight());
+      position.columnIndex = srand() % (currentField.getWidth());
+      if (position.rowIndex == 0 || position.columnIndex == 0 ||
+          position.rowIndex == currentField.getHeight() - 1 ||
+          position.columnIndex == currentField.getWidth() - 1) {
         void(reposition(currentField));
       }
     }
@@ -179,7 +192,7 @@ class snake {
         case RIGHT:
           nextPosition.rowIndex += speed;
       }
-      
+
       for (int bodyPartIndex = snakeSize - 1; bodyPartIndex > 0; --bodyPartIndex) {
         position[bodyPartIndex] = position[bodyPartIndex - 1];
       }
@@ -190,25 +203,23 @@ class snake {
           head.rowIndex < 1 ||
           head.columnIndex >= currentField.getHeight() - 1||
           head.rowIndex >= currentField.getWidth() - 1) {
-        throw "DEADD!!!!";
-        
+        throw "dead";
+
       }
 
       for (int bodyPartIndex = snakeSize - 1; bodyPartIndex > 0; --bodyPartIndex) {
         if (position[0].rowIndex == position[bodyPartIndex].rowIndex &&
             position[0].columnIndex == position[bodyPartIndex].columnIndex) {
-          throw "Dead";
+          throw "dead";
         }
       }
     }
-    
-    void getHeadCoordinates() {
-      cout << head.rowIndex << endl << head.columnIndex;
-    }
-    
+
     bool checkFood(const food& currentFood) {
-      if(currentFood.getRowIndex() == head.columnIndex && currentFood.getColumnIndex() == head.rowIndex) {
+      if(currentFood.getRowIndex() == head.columnIndex &&
+          currentFood.getColumnIndex() == head.rowIndex) {
         snakeSize += 1;
+        score += 10;
         return true;
       }
       return false;
@@ -217,6 +228,7 @@ class snake {
 } gameSnake(gameField);
 
 void firstScreen() {
+  colorize(250);
   cout << "                                                                                                                         \n"
        "                                                                                                                         \n"
        "     SSSSSSSSSSSSSSS NNNNNNNN        NNNNNNNN               AAA               KKKKKKKKK    KKKKKKKEEEEEEEEEEEEEEEEEEEEEE \n"
@@ -239,13 +251,115 @@ void firstScreen() {
        "                                                                                                                         \n"
        "                                                                                                                         \n"
        "                                                                                                                         \n"
-       "                                               press any key to continue...                                              \n"
+       "                                              press any key to continue...                                               \n"
        "                                                                                                                         \n";
   _getch();
   system("cls");
-  cout << "Enter your name: ";
-  cin >> userName;
+}
+
+struct leaderboardLine {
+  int place;
+  string name = "-";
+  int score;
+} players[10];
+
+void createLeaderboard(string currentPlayerName, int currentPlayerScore) {
+  ofstream outfile ("leaderboard.txt");
+  players[0].name = currentPlayerName;
+  players[0].score = currentPlayerScore;
+
+  outfile << players[0].place;
+  outfile << ' ';
+  outfile << players[0].name;
+  outfile << ' ';
+  outfile << players[0].score;
+  outfile << '\n';
+  outfile.close();
+}
+
+int fileParsing(fstream& file, string currentPlayerName, int currentPlayerScore ) {
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    file >> players[playerIndex].place;
+    file >> players[playerIndex].name;
+    file >> players[playerIndex].score;
+  }
+
+  int worsePlayerScore;
+  string worsePlayerName;
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    if (currentPlayerScore > players[playerIndex].score) {
+      for (int worsePlayerIndex = playerIndex; worsePlayerIndex < 10; ++worsePlayerIndex) {
+        worsePlayerScore = players[worsePlayerIndex].score;
+        worsePlayerName = players[worsePlayerIndex].name;
+        players[worsePlayerIndex].score = currentPlayerScore;
+        players[worsePlayerIndex].name = currentPlayerName;
+        currentPlayerScore = worsePlayerScore;
+        currentPlayerName = worsePlayerName;
+      }
+      return 1;
+    }
+  }
+  return 0;
+}
+
+void leaderboardOutput() {
+  fstream output;
+  output.open("leaderboard.txt", fstream::out | fstream::trunc);
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    output << players[playerIndex].place;
+    output << ' ';
+    output << players[playerIndex].name;
+    output << ' ';
+    output << players[playerIndex].score;
+    output << '\n';
+  }
+  output.close();;
+}
+
+void leaderboard(string name, int score) {
+  fstream readingFile;
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    players[playerIndex].place = playerIndex + 1;
+  }
+  readingFile.open("leaderboard.txt");
+  if (readingFile.is_open()) {
+    fileParsing(readingFile, name, score);
+    readingFile.close();
+  } else {
+    createLeaderboard(name, score);
+  }
+  leaderboardOutput();
+  readingFile.open("leaderboard.txt");
+  cout << readingFile.rdbuf();
+}
+
+int choice() {
+  int input;
+  cout << "Choose the action: press 1 to start the game, 2 to show the leaderboard or 3 to exit. ";
+  cin >> input;
+  return input;
+}
+
+void gameOver () {
   system("cls");
+  cout <<"   /^^^^         /^       /^^       /^^/^^^^^^^^\n"
+       " /^    /^^      /^ ^^     /^ /^^   /^^^/^^      \n"
+       "/^^            /^  /^^    /^^ /^^ / /^^/^^      \n"
+       "/^^           /^^   /^^   /^^  /^^  /^^/^^^^^^  \n"
+       "/^^   /^^^^  /^^^^^^ /^^  /^^   /^  /^^/^^      \n"
+       " /^^    /^  /^^       /^^ /^^       /^^/^^      \n"
+       "  /^^^^^   /^^         /^^/^^       /^^/^^^^^^^^\n"
+       "                                                \n"
+       "    /^^^^     /^^         /^^/^^^^^^^^/^^^^^^^  \n"
+       "  /^^    /^^   /^^       /^^ /^^      /^^    /^^  \n"
+       "/^^        /^^  /^^     /^^  /^^      /^^    /^^  \n"
+       "/^^        /^^   /^^   /^^   /^^^^^^  /^ /^^      \n"
+       "/^^        /^^    /^^ /^^    /^^      /^^  /^^    \n"
+       "  /^^     /^^      /^^^^     /^^      /^^    /^^  \n"
+       "    /^^^^           /^^      /^^^^^^^^/^^      /^^\n";
+  leaderboard(userName, score);
+  cout << "\nThanks for coming, goodbye!\n";
+  system("pause");
 }
 
 const int field::height = 10;
@@ -253,198 +367,54 @@ const int field::width = 15;
 
 int main() {
   firstScreen();
-  
+
   gameFood.setPosition(8, 5);
 
-  bool choice;
-  cout << "Choose the action: press 1 to start the game or 0 to exit. ";
-  cin >> choice;
+  switch (choice()) {
+    case 1:
+      cout << "Enter your name: ";
+      cin >> userName;
+      system("cls");
 
-  if (choice != true) {
-    cout << "Goodbye!" << endl;
-    system("pause");
-    return 0;
-  }
-  
-  //gameSnake.getHeadCoordinates();
-  //cout << endl;
-  //cout << gameField.getHeight() << ' ' << gameField.getWidth();
-  while (true) {
-    gameField.clear();
+      while (true) {
+        gameField.clear();
 
-    gameSnake.getInput(gameField);
-    try {
-      gameSnake.move(gameField);
-    } catch (const char * err) {
-      gameField.clear();
-      cerr << err << endl;
+        gameSnake.getInput(gameField);
+        try {
+          gameSnake.move(gameField);
+        } catch (const char * err) {
+          gameField.clear();
+          gameOver();
+          return -1;
+        }
+        gameSnake.snakeSpawn(gameField);
+        gameField.spawn(gameFood.getRowIndex(), gameFood.getColumnIndex(), gameFood.getSymbol());
+
+        if(gameSnake.checkFood(gameFood)) {
+          gameFood.reposition(gameField);
+        }
+
+        gameField.print();
+
+        Sleep(100);
+        system("cls");
+      }
       system("pause");
-      return -1;
-    }
-    gameSnake.snakeSpawn(gameField);
-    gameField.spawn(gameFood.getRowIndex(), gameFood.getColumnIndex(), gameFood.getSymbol());
-    cout << endl << gameFood.getRowIndex() << gameFood.getColumnIndex();
-
-    if(gameSnake.checkFood(gameFood)) {
-      gameFood.reposition(gameField);
-    }
-
-    gameField.print();
-
-    Sleep(100);
-    system("cls");
-  } 
-  system("pause");
+      return 0;
+    case 2:
+      leaderboard(userName, score);
+      system("pause");
+      system("cls");
+      main();
+    case 3:
+      cout << "Thanks for coming, goodbye!\n";
+      system("pause");
+      return 0;
+    default:
+      cout << "wrong input\n";
+      system("pause");
+      system("cls");
+      main();
+  }
   return 0;
 }
-
-/*
-// C program to build the complete
-// snake game
-#include <conio.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-int i, j, height = 20, width = 20;
-int gameover, score;
-int x, y, fruitx, fruity, flag;
-
-// Function to generate the fruit
-// within the boundary
-void setup()
-{
-	gameover = 0;
-
-	// Stores height and width
-	x = height / 2;
-	y = width / 2;
-label1:
-	fruitx = rand() % 20;
-	if (fruitx == 0)
-		goto label1;
-label2:
-	fruity = rand() % 20;
-	if (fruity == 0)
-		goto label2;
-	score = 0;
-}
-
-// Function to draw the boundaries
-void draw()
-{
-	system("cls");
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
-			if (i == 0 || i == width - 1
-				|| j == 0
-				|| j == height - 1) {
-				printf("#");
-			}
-			else {
-				if (i == x && j == y)
-					printf("0");
-				else if (i == fruitx
-						&& j == fruity)
-					printf("*");
-				else
-					printf(" ");
-			}
-		}
-		printf("\n");
-	}
-
-	// Print the score after the
-	// game ends
-	printf("score = %d", score);
-	printf("\n");
-	printf("press X to quit the game");
-}
-
-// Function to take the input
-void input()
-{
-	if (kbhit()) {
-		switch (getch()) {
-		case 'a':
-			flag = 1;
-			break;
-		case 's':
-			flag = 2;
-			break;
-		case 'd':
-			flag = 3;
-			break;
-		case 'w':
-			flag = 4;
-			break;
-		case 'x':
-			gameover = 1;
-			break;
-		}
-	}
-}
-
-// Function for the logic behind
-// each movement
-void logic()
-{
-	sleep(0.01);
-	switch (flag) {
-	case 1:
-		y--;
-		break;
-	case 2:
-		x++;
-		break;
-	case 3:
-		y++;
-		break;
-	case 4:
-		x--;
-		break;
-	default:
-		break;
-	}
-
-	// If the game is over
-	if (x < 0 || x > height
-		|| y < 0 || y > width)
-		gameover = 1;
-
-	// If snake reaches the fruit
-	// then update the score
-	if (x == fruitx && y == fruity) {
-	label3:
-		fruitx = rand() % 20;
-		if (fruitx == 0)
-			goto label3;
-
-	// After eating the above fruit
-	// generate new fruit
-	label4:
-		fruity = rand() % 20;
-		if (fruity == 0)
-			goto label4;
-		score += 10;
-	}
-}
-
-// Driver Code
-int main()
-{
-	int m, n;
-
-	// Generate boundary
-	setup();
-
-	// Until the game is over
-	while (!gameover) {
-
-		// Function Call
-		draw();
-		input();
-		logic();
- }
-}
-*/
