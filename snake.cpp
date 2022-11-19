@@ -20,6 +20,13 @@ void colorize(int colorNumber) {
   SetConsoleTextAttribute(hConsole, colorNumber);
 }
 
+void setCursorPosition(int x, int y) {
+  static const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+  cout.flush();
+  COORD coord = { (SHORT)x, (SHORT)y };
+  SetConsoleCursorPosition(hOut, coord);
+}
+
 string userName = "-";
 int score = 0;
 
@@ -140,7 +147,7 @@ class field {
     }
 
     void print() {
-      system ("cls");
+      setCursorPosition(0,0);
 
       for (int rowIndex = 0; rowIndex < height; ++rowIndex) {
         for (int columnIndex = 0; columnIndex < width; ++columnIndex) {
@@ -171,14 +178,13 @@ class field {
            "\t NAME:" << userName << "\n"
            "\t CURRENT SCORE:" << score << "\n"
            "\t HIGHEST SCORE: " << players[0].score << "\n";
+      cout.flush();
     }
 
     void clear() {
+      setCursorPosition(0, 0);
       for(int rowIndex = 1; rowIndex < height - 1; ++rowIndex) {
         for(int columnIndex = 1; columnIndex < width - 1; ++columnIndex) {
-          if (currentField[rowIndex][columnIndex] = ' ') {
-            continue;
-          }
           currentField[rowIndex][columnIndex] = ' ';
         }
       }
@@ -428,7 +434,7 @@ int main() {
         if(gameSnake.checkFood(gameFood)) {
           gameFood.reposition(gameField);
         }
-
+        
         gameField.print();
 
         Sleep(1);
