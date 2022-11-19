@@ -176,7 +176,9 @@ class field {
     void clear() {
       for(int rowIndex = 1; rowIndex < height - 1; ++rowIndex) {
         for(int columnIndex = 1; columnIndex < width - 1; ++columnIndex) {
-          currentField[rowIndex][columnIndex] = ' ';
+          if (currentField[rowIndex][columnIndex] = ' ') {
+            continue;
+          }
         }
       }
     }
@@ -398,11 +400,12 @@ int main() {
   getHighestScore();
   srand(time(0));
   firstScreen();
+  enum choices {GAME = 1, LEADERBOARD, CLEAR_LEADERBOARD, EXIT};
   gameFood.setPosition((rand() % (gameField.getWidth() - 2)) + 1,
                        (rand() % (gameField.getHeight() - 2)) + 1);
-
+  
   switch (choice()) {
-    case 1:
+    case GAME:
       colorize(10);
       cout << "Enter your name without spaces: ";
       colorize(47);
@@ -410,13 +413,11 @@ int main() {
       system("cls");
 
       while (true) {
-        gameField.clear();
-
         gameSnake.getInput(gameField);
         try {
           gameSnake.move(gameField);
         } catch (const char * err) {
-          gameField.clear();
+          system("cls");
           gameOver();
           return -1;
         }
@@ -429,19 +430,19 @@ int main() {
 
         gameField.print();
 
-        Sleep(70);
-        system("cls");
+        Sleep(1);
+        gameField.clear();
       }
       system("pause");
       return 0;
-    case 2:
+    case LEADERBOARD:
       system("cls");
       leaderboard(userName, score);
       system("pause");
       system("cls");
       main();
       return 0;
-    case 3:
+    case CLEAR_LEADERBOARD:
       remove("leaderboard.txt");
       system("cls");
       colorize(4);
@@ -450,7 +451,7 @@ int main() {
       system("cls");
       main();
       return 0;
-    case 4:
+    case EXIT:
       system("cls");
       colorize(14);
       cout << "Thanks for playing, goodbye!\n";
