@@ -179,6 +179,7 @@ class field {
           if (currentField[rowIndex][columnIndex] = ' ') {
             continue;
           }
+          currentField[rowIndex][columnIndex] = ' ';
         }
       }
     }
@@ -403,7 +404,7 @@ int main() {
   enum choices {GAME = 1, LEADERBOARD, CLEAR_LEADERBOARD, EXIT};
   gameFood.setPosition((rand() % (gameField.getWidth() - 2)) + 1,
                        (rand() % (gameField.getHeight() - 2)) + 1);
-  
+
   switch (choice()) {
     case GAME:
       colorize(10);
