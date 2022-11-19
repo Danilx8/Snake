@@ -72,7 +72,7 @@ int fileParsing(fstream& file, string currentPlayerName, int currentPlayerScore 
   return 0;
 }
 
-void leaderboardOutput() {
+void leaderboardBuilder() {
   fstream output;
   output.open("leaderboard.txt", fstream::out | fstream::trunc);
   for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
@@ -100,7 +100,7 @@ void leaderboard(string name, int score) {
     createLeaderboard(name, score);
   }
 
-  leaderboardOutput();
+  leaderboardBuilder();
   readingFile.open("leaderboard.txt");
   colorize(14);
   cout << "\n\tBEST SCORES\n";
