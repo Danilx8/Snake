@@ -27,6 +27,14 @@ void setCursorPosition(int x, int y) {
   SetConsoleCursorPosition(hOut, coord);
 }
 
+void hideCursor() {
+  HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+  CONSOLE_CURSOR_INFO info;
+  info.dwSize = 100;
+  info.bVisible = FALSE;
+  SetConsoleCursorInfo(consoleHandle, &info);
+}
+
 string userName = "-";
 int score = 0;
 
@@ -404,6 +412,7 @@ const int field::height = 30;
 const int field::width = 25;
 
 int main() {
+  hideCursor();
   getHighestScore();
   srand(time(0));
   firstScreen();
@@ -434,7 +443,7 @@ int main() {
         if(gameSnake.checkFood(gameFood)) {
           gameFood.reposition(gameField);
         }
-        
+
         gameField.print();
 
         Sleep(1);
