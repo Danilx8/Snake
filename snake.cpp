@@ -411,6 +411,8 @@ void gameOver () {
        "    /^^^^           /^^      /^^^^^^^^/^^      /^^\n";
 
   leaderboard(userName, score);
+  cout << "\nThanks for coming, goodbye!\n";
+  system("pause");
 }
 
 const int field::height = 30;
@@ -431,7 +433,6 @@ int main() {
       cout << "Enter your name without spaces: ";
       colorize(47);
       cin >> userName;
-      cin.clear();
       system("cls");
 
       while (true) {
@@ -441,16 +442,6 @@ int main() {
         } catch (const char * err) {
           system("cls");
           gameOver();
-          cout << "\n\nPlay again? Press Y for yes or N for no\n";
-          char playAgain;
-          cin >> playAgain;
-          if (playAgain == 'y'|| playAgain == 'Y') {
-            system("cls");
-            main();
-          } else if (playAgain == 'n'|| playAgain == 'N') {
-            cout << "\nThanks for coming, goodbye!\n";
-            system("pause");
-          }
           return 0;
         }
         gameSnake.snakeSpawn(gameField);
