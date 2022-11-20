@@ -1,9 +1,9 @@
-	1 eker 50
-	2 peoetpoe 50
+	1 eperl 70
+	2 eker 50
 	3 peoetpoe 50
-	4 fghjk 50
-	5 eeer 20
-	6 - 0
+	4 peoetpoe 50
+	5 fghjk 50
+	6 eeer 20
 	7 - 0
 	8 - 0
 	9 - 0

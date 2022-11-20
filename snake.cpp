@@ -313,10 +313,6 @@ class snake {
           break;
         default:
           break;
-          nextPosition.columnIndex = nextPosition.columnIndex;
-          nextPosition.rowIndex = nextPosition.rowIndex;
-          nextPosition.rowIndex = nextPosition.rowIndex;
-          nextPosition.columnIndex = nextPosition.columnIndex;
       }
 
       for (int bodyPartIndex = snakeSize - 1; bodyPartIndex > 0; --bodyPartIndex) {
