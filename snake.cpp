@@ -50,6 +50,9 @@ struct leaderboardLine {
 
 void createLeaderboard(string currentPlayerName, int currentPlayerScore) {
   ofstream outfile ("leaderboard.txt");
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    players[playerIndex].place = playerIndex + 1;
+  }
   players[0].name = currentPlayerName;
   players[0].score = currentPlayerScore;
 
@@ -104,9 +107,6 @@ void leaderboardBuilder() {
 
 void leaderboard(string name, int score) {
   fstream readingFile;
-  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
-    players[playerIndex].place = playerIndex + 1;
-  }
   readingFile.open("leaderboard.txt");
   if (readingFile.is_open()) {
     fileParsing(readingFile, name, score);
@@ -252,7 +252,7 @@ class food {
 class snake {
   private:
     coordinates position[100];
-    enum {UP, DOWN, LEFT, RIGHT} direction;
+    enum {STOP, UP, DOWN, LEFT, RIGHT} direction;
     char headSymbol = '@';
     char bodySymbol = '*';
     int speed = 1;
@@ -263,7 +263,7 @@ class snake {
     snake (field& fieldData):
       position(),
       snakeSize(1),
-      direction(RIGHT),
+      direction(STOP),
       head(position[0]) {
       position[0].rowIndex = fieldData.getHeight() / 2;
       position[0].columnIndex = fieldData.getWidth() / 2;
@@ -310,6 +310,13 @@ class snake {
           break;
         case RIGHT:
           nextPosition.rowIndex += speed;
+          break;
+        default:
+          break;
+          nextPosition.columnIndex = nextPosition.columnIndex;
+          nextPosition.rowIndex = nextPosition.rowIndex;
+          nextPosition.rowIndex = nextPosition.rowIndex;
+          nextPosition.columnIndex = nextPosition.columnIndex;
       }
 
       for (int bodyPartIndex = snakeSize - 1; bodyPartIndex > 0; --bodyPartIndex) {
@@ -404,8 +411,6 @@ void gameOver () {
        "    /^^^^           /^^      /^^^^^^^^/^^      /^^\n";
 
   leaderboard(userName, score);
-  cout << "\nThanks for coming, goodbye!\n";
-  system("pause");
 }
 
 const int field::height = 30;
@@ -426,6 +431,7 @@ int main() {
       cout << "Enter your name without spaces: ";
       colorize(47);
       cin >> userName;
+      cin.clear();
       system("cls");
 
       while (true) {
@@ -435,7 +441,17 @@ int main() {
         } catch (const char * err) {
           system("cls");
           gameOver();
-          return -1;
+          cout << "\n\nPlay again? Press Y for yes or N for no\n";
+          char playAgain;
+          cin >> playAgain;
+          if (playAgain == 'y'|| playAgain == 'Y') {
+            system("cls");
+            main();
+          } else if (playAgain == 'n'|| playAgain == 'N') {
+            cout << "\nThanks for coming, goodbye!\n";
+            system("pause");
+          }
+          return 0;
         }
         gameSnake.snakeSpawn(gameField);
         gameField.spawn(gameFood.getRowIndex(), gameFood.getColumnIndex(), gameFood.getSymbol());
@@ -460,6 +476,10 @@ int main() {
       return 0;
     case CLEAR_LEADERBOARD:
       remove("leaderboard.txt");
+      for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+        players[playerIndex].score = 0;
+        players[playerIndex].name = "-";
+      }
       system("cls");
       colorize(4);
       cout << "leaderboard reset successfully\n";
@@ -475,7 +495,12 @@ int main() {
       return 0;
     default:
       system("cls");
-      cout << "wrong input\n";
+      while(cin.fail()) {
+        cin.clear();
+        cin.ignore(INT_MAX, '\n');
+        colorize(4);
+        cout << "wrong input\n";
+      }
       system("pause");
       system("cls");
       main();

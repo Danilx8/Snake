@@ -1,10 +1,10 @@
-	0 d;dl 170
-	2 ву 110
-	3 dd 90
-	4 укуе 60
-	5 Danil 60
-	6 dfg 50
-	7 er 50
-	8 player 50
+	1 eker 50
+	2 peoetpoe 50
+	3 peoetpoe 50
+	4 fghjk 50
+	5 eeer 20
+	6 - 0
+	7 - 0
+	8 - 0
 	9 - 0
 	10 - 0
