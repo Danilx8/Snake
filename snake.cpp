@@ -13,11 +13,34 @@
 #include <time.h>
 using namespace std;
 
+const int SNAKE_HEAD_AND_LOGO_COLOR = 2;
+const int FAILURE_COLOR = 4;
+const int FOOD_COLOR = 6;
+const int SNAKE_AND_TEXT_COLOR = 10;
+const int FRIENDLY_TEXT_COLOR = 14;
+const int WALLS_COLOR = 15;
+const int USER_NAME_COLOR = 47;
+
 
 void colorize(int colorNumber) {
   HANDLE hConsole;
   hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
   SetConsoleTextAttribute(hConsole, colorNumber);
+}
+
+void setCursorPosition(int x, int y) {
+  static const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+  cout.flush();
+  COORD coord = { (SHORT)x, (SHORT)y };
+  SetConsoleCursorPosition(hOut, coord);
+}
+
+void hideCursor() {
+  HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+  CONSOLE_CURSOR_INFO info;
+  info.dwSize = 100;
+  info.bVisible = FALSE;
+  SetConsoleCursorInfo(consoleHandle, &info);
 }
 
 string userName = "-";
@@ -35,6 +58,9 @@ struct leaderboardLine {
 
 void createLeaderboard(string currentPlayerName, int currentPlayerScore) {
   ofstream outfile ("leaderboard.txt");
+  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+    players[playerIndex].place = playerIndex + 1;
+  }
   players[0].name = currentPlayerName;
   players[0].score = currentPlayerScore;
 
@@ -72,7 +98,7 @@ int fileParsing(fstream& file, string currentPlayerName, int currentPlayerScore 
   return 0;
 }
 
-void leaderboardOutput() {
+void leaderboardBuilder() {
   fstream output;
   output.open("leaderboard.txt", fstream::out | fstream::trunc);
   for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
@@ -89,9 +115,6 @@ void leaderboardOutput() {
 
 void leaderboard(string name, int score) {
   fstream readingFile;
-  for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
-    players[playerIndex].place = playerIndex + 1;
-  }
   readingFile.open("leaderboard.txt");
   if (readingFile.is_open()) {
     fileParsing(readingFile, name, score);
@@ -100,9 +123,9 @@ void leaderboard(string name, int score) {
     createLeaderboard(name, score);
   }
 
-  leaderboardOutput();
+  leaderboardBuilder();
   readingFile.open("leaderboard.txt");
-  colorize(14);
+  colorize(FRIENDLY_TEXT_COLOR);
   cout << "\n\tBEST SCORES\n";
   cout << readingFile.rdbuf();
   readingFile.close();
@@ -140,40 +163,41 @@ class field {
     }
 
     void print() {
-      system ("cls");
+      setCursorPosition(0,0);
 
       for (int rowIndex = 0; rowIndex < height; ++rowIndex) {
         for (int columnIndex = 0; columnIndex < width; ++columnIndex) {
           switch(currentField[rowIndex][columnIndex]) {
             case '#':
-              colorize(15);
+              colorize(WALLS_COLOR);
               break;
             case '@':
-              colorize(2);
+              colorize(SNAKE_HEAD_AND_LOGO_COLOR);
               break;
             case '*':
-              colorize(10);
+              colorize(SNAKE_AND_TEXT_COLOR);
               break;
             case '$':
-              colorize(6);
+              colorize(FOOD_COLOR);
               break;
             default:
-              colorize(11);
               break;
           }
           cout << currentField[rowIndex][columnIndex];
         }
         cout << endl;
       }
-      
-      colorize(14);
+
+      colorize(FRIENDLY_TEXT_COLOR);
       cout << "\n\n\n"
            "\t NAME:" << userName << "\n"
            "\t CURRENT SCORE:" << score << "\n"
            "\t HIGHEST SCORE: " << players[0].score << "\n";
+      cout.flush();
     }
 
     void clear() {
+      setCursorPosition(0, 0);
       for(int rowIndex = 1; rowIndex < height - 1; ++rowIndex) {
         for(int columnIndex = 1; columnIndex < width - 1; ++columnIndex) {
           currentField[rowIndex][columnIndex] = ' ';
@@ -235,7 +259,7 @@ class food {
 class snake {
   private:
     coordinates position[100];
-    enum {UP, DOWN, LEFT, RIGHT} direction;
+    enum {STOP, UP, DOWN, LEFT, RIGHT, UPRIGHT, UPLEFT, DOWNRIGHT, DOWNLEFT} direction;
     char headSymbol = '@';
     char bodySymbol = '*';
     int speed = 1;
@@ -246,7 +270,7 @@ class snake {
     snake (field& fieldData):
       position(),
       snakeSize(1),
-      direction(RIGHT),
+      direction(STOP),
       head(position[0]) {
       position[0].rowIndex = fieldData.getHeight() / 2;
       position[0].columnIndex = fieldData.getWidth() / 2;
@@ -264,18 +288,52 @@ class snake {
       }
     }
 
-    void getInput(const field& currentField) {
-      if (GetAsyncKeyState(VK_UP) && (direction != DOWN)) {
-        direction = UP;
-      }
-      if (GetAsyncKeyState(VK_DOWN) && (direction != UP)) {
-        direction = DOWN;
-      }
-      if (GetAsyncKeyState(VK_LEFT) && (direction != RIGHT)) {
-        direction = LEFT;
-      }
-      if (GetAsyncKeyState(VK_RIGHT) && (direction != LEFT)) {
-        direction = RIGHT;
+    void getInput() {
+      if (_kbhit()) {
+        switch (_getch()) {
+          case '4':
+            if (direction != RIGHT) {
+              direction = LEFT;
+            }
+            break;
+          case '6':
+            if (direction != LEFT) {
+              direction = RIGHT;
+            }
+            break;
+          case '8':
+            if (direction != DOWN) {
+              direction = UP;
+            }
+            break;
+          case '5':
+            if (direction != UP) {
+              direction = DOWN;
+            }
+            break;
+          case '7':
+            if (direction != DOWNRIGHT) {
+              direction = UPLEFT;
+            }
+            break;
+          case '9':
+            if (direction != DOWNLEFT) {
+              direction = UPRIGHT;
+            }
+            break;
+          case '1':
+            if (direction != UPRIGHT) {
+              direction = DOWNLEFT;
+            }
+            break;
+          case '3':
+            if (direction != UPLEFT) {
+              direction = DOWNRIGHT;
+            }
+            break;
+          default:
+            break;
+        }
       }
     }
 
@@ -293,11 +351,33 @@ class snake {
           break;
         case RIGHT:
           nextPosition.rowIndex += speed;
+          break;
+        case UPRIGHT:
+          nextPosition.rowIndex += speed;
+          nextPosition.columnIndex -= speed;
+          break;
+        case UPLEFT:
+          nextPosition.rowIndex -= speed;
+          nextPosition.columnIndex -= speed;
+          break;
+        case DOWNRIGHT:
+          nextPosition.rowIndex += speed;
+          nextPosition.columnIndex += speed;
+          break;
+        case DOWNLEFT:
+          nextPosition.rowIndex -= speed;
+          nextPosition.columnIndex += speed;
+          break;
+        default:
+          break;
       }
 
-      for (int bodyPartIndex = snakeSize - 1; bodyPartIndex > 0; --bodyPartIndex) {
-        position[bodyPartIndex] = position[bodyPartIndex - 1];
+      if (direction != STOP) {
+        for (int bodyPartIndex = snakeSize - 1; bodyPartIndex > 0; --bodyPartIndex) {
+          position[bodyPartIndex] = position[bodyPartIndex - 1];
+        }
       }
+
       head.rowIndex += nextPosition.rowIndex;
       head.columnIndex += nextPosition.columnIndex;
 
@@ -330,7 +410,7 @@ class snake {
 } gameSnake(gameField);
 
 void firstScreen() {
-  colorize(2);
+  colorize(SNAKE_HEAD_AND_LOGO_COLOR);
   cout << "                                                                                                                         \n"
        "                                                                                                                         \n"
        "     SSSSSSSSSSSSSSS NNNNNNNN        NNNNNNNN               AAA               KKKKKKKKK    KKKKKKKEEEEEEEEEEEEEEEEEEEEEE \n"
@@ -361,15 +441,21 @@ void firstScreen() {
 
 int choice() {
   int input;
-  colorize(10);
-  cout << "Choose the action: press 1 to start the game, 2 to show the leaderboard, 3 to reset the leaderboard or 4 to exit. " << endl;
+  colorize(SNAKE_AND_TEXT_COLOR);
+  cout << "Choose the action: press 1 to start the game, 2 to show instructions, 3 to show the leaderboard, 4 to reset the leaderboard or 5 to exit. " << endl;
   cin >> input;
   return input;
 }
 
+void instructions() {
+  system("cls");
+  colorize(FRIENDLY_TEXT_COLOR);
+  cout << "HOW TO PLAY (use numpad):\n789 - up and left, up, up and right\n456 - left, down, right\n1 3 - down and left, down and right\n";
+}
+
 void gameOver () {
   system("cls");
-  colorize(4);
+  colorize(FAILURE_COLOR);
   cout <<"   /^^^^         /^       /^^       /^^/^^^^^^^^\n"
        " /^    /^^      /^ ^^     /^ /^^   /^^^/^^      \n"
        "/^^            /^  /^^    /^^ /^^ / /^^/^^      \n"
@@ -391,34 +477,34 @@ void gameOver () {
   system("pause");
 }
 
-const int field::height = 30;
-const int field::width = 25;
+const int field::height = 40;
+const int field::width = 60;
 
 int main() {
+  hideCursor();
   getHighestScore();
   srand(time(0));
   firstScreen();
+  enum choices {GAME = 1, TUTORIAL, LEADERBOARD, CLEAR_LEADERBOARD, EXIT};
   gameFood.setPosition((rand() % (gameField.getWidth() - 2)) + 1,
                        (rand() % (gameField.getHeight() - 2)) + 1);
-  
+
   switch (choice()) {
-    case 1:
-      colorize(10);
+    case GAME:
+      colorize(SNAKE_AND_TEXT_COLOR);
       cout << "Enter your name without spaces: ";
-      colorize(47);
+      colorize(USER_NAME_COLOR);
       cin >> userName;
       system("cls");
 
       while (true) {
-        gameField.clear();
-
-        gameSnake.getInput(gameField);
+        gameSnake.getInput();
         try {
           gameSnake.move(gameField);
         } catch (const char * err) {
-          gameField.clear();
+          system("cls");
           gameOver();
-          return -1;
+          return 0;
         }
         gameSnake.snakeSpawn(gameField);
         gameField.spawn(gameFood.getRowIndex(), gameFood.getColumnIndex(), gameFood.getSymbol());
@@ -429,36 +515,51 @@ int main() {
 
         gameField.print();
 
-        Sleep(70);
-        system("cls");
+        Sleep(10);
+        gameField.clear();
       }
       system("pause");
       return 0;
-    case 2:
+    case TUTORIAL:
+      instructions();
+      system("pause");
+      system("cls");
+      main();
+      return 0;
+    case LEADERBOARD:
       system("cls");
       leaderboard(userName, score);
       system("pause");
       system("cls");
       main();
       return 0;
-    case 3:
+    case CLEAR_LEADERBOARD:
       remove("leaderboard.txt");
+      for (int playerIndex = 0; playerIndex < 10; ++playerIndex) {
+        players[playerIndex].score = 0;
+        players[playerIndex].name = "-";
+      }
       system("cls");
-      colorize(4);
+      colorize(FAILURE_COLOR);
       cout << "leaderboard reset successfully\n";
       system("pause");
       system("cls");
       main();
       return 0;
-    case 4:
+    case EXIT:
       system("cls");
-      colorize(14);
+      colorize(FRIENDLY_TEXT_COLOR);
       cout << "Thanks for playing, goodbye!\n";
       system("pause");
       return 0;
     default:
       system("cls");
-      cout << "wrong input\n";
+      while(cin.fail()) {
+        cin.clear();
+        cin.ignore(INT_MAX, '\n');
+        colorize(FAILURE_COLOR);
+        cout << "wrong input\n";
+      }
       system("pause");
       system("cls");
       main();
