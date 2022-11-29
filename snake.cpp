@@ -386,7 +386,6 @@ class snake {
           head.columnIndex >= currentField.getHeight() - 1||
           head.rowIndex >= currentField.getWidth() - 1) {
         throw "dead";
-
       }
 
       for (int bodyPartIndex = snakeSize - 1; bodyPartIndex > 0; --bodyPartIndex) {
@@ -496,27 +495,29 @@ int main() {
       colorize(USER_NAME_COLOR);
       cin >> userName;
       system("cls");
-
       while (true) {
-        gameSnake.getInput();
-        try {
-          gameSnake.move(gameField);
-        } catch (const char * err) {
-          system("cls");
-          gameOver();
-          return 0;
+        time_t endwait;
+        int seconds = 2;
+        endwait = time(NULL) + seconds;
+        while (time(NULL) < endwait) {
+          gameSnake.getInput();
+          try {
+            gameSnake.move(gameField);
+          } catch (const char * err) {
+            system("cls");
+            gameOver();
+            return 0;
+          }
+          gameSnake.snakeSpawn(gameField);
+          gameField.spawn(gameFood.getRowIndex(), gameFood.getColumnIndex(), gameFood.getSymbol());
+
+          if(gameSnake.checkFood(gameFood)) {
+            gameFood.reposition(gameField);
+          }
+
+          gameField.print();
+          gameField.clear();
         }
-        gameSnake.snakeSpawn(gameField);
-        gameField.spawn(gameFood.getRowIndex(), gameFood.getColumnIndex(), gameFood.getSymbol());
-
-        if(gameSnake.checkFood(gameFood)) {
-          gameFood.reposition(gameField);
-        }
-
-        gameField.print();
-
-        Sleep(10);
-        gameField.clear();
       }
       system("pause");
       return 0;
