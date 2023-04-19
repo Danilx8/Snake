@@ -23,11 +23,6 @@
 
 <!-- PROJECT LOGO -->
 <br />
-<div align="center">
-  <a href="https://github.com/Danilx8/Snake">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
-
 <h3 align="center">Snake the Game</h3>
 
   <p align="center">
@@ -76,8 +71,6 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
 
 The game is played, using the numpad and it's highly recommended to read the instructions first. In addition to standart movements and features of all classic Snake games, this edition includes diagonal movements, a leaderboard and colorful design  
 
