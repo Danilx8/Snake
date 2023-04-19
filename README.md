@@ -9,7 +9,7 @@
 
 
 
-<!-- PROJECT SHIELDS -->!
+<!-- PROJECT SHIELDS -->
 
 <!--
 *** I'm using markdown "reference style" links for readability.
@@ -67,7 +67,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project  
 
-[snake intro](https://user-images.githubusercontent.com/108181060/233105514-1e0536d6-e002-43c5-a777-2631ccf297b6.png)
+![snake intro](https://user-images.githubusercontent.com/108181060/233106031-b041d7f5-e8b9-4157-b014-9f1abaf85c01.png)
 
 The game is played, using the numpad and it's highly recommended to read the instructions first. In addition to standart movements and features of all classic Snake games, this edition includes diagonal movements, a leaderboard and colorful design  
 
