@@ -66,7 +66,9 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project  
+
 [snake intro](https://user-images.githubusercontent.com/108181060/233105514-1e0536d6-e002-43c5-a777-2631ccf297b6.png)
+
 The game is played, using the numpad and it's highly recommended to read the instructions first. In addition to standart movements and features of all classic Snake games, this edition includes diagonal movements, a leaderboard and colorful design  
 
 <p align="right">(<a href="#top">back to top</a>)</p>
